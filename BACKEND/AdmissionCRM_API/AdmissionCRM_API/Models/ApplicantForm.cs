@@ -16,7 +16,7 @@ namespace AdmissionCRM_API.Models
         public int? AcademicYearId { get; set; }
         public int? QuotaId { get; set; }
         public decimal? Marks { get; set; }
-        public string? DocumentStatus { get; set; } // Pending / Submitted / Verified
+        public string? DocumentStatus { get; set; } // Submitted / Verified
         public string? FeeStatus { get; set; } // Pending / Paid
         public string? AdmissionNumber { get; set; }
         public bool? IsActive { get; set; } = true;
@@ -44,7 +44,21 @@ namespace AdmissionCRM_API.Models
         public string? AdmissionNumber { get; set; }
         public bool? IsActive { get; set; }
         public string? UserId { get; set; }
-        public List<IFormFile>? Documents { get; set; } // Only here because applicant has documents
+        public List<IFormFile>? Documents { get; set; } 
+    }
+
+    public class ApplicantDocumentStatusDto
+    {
+        public int ApplicantId { get; set; }
+        public string? DocumentStatus { get; set; } = "Verified";
+        public string? UserId { get; set; }
+    }
+       
+    public class ApplicantFeeStatusDto
+    {
+        public int ApplicantId { get; set; }
+        public string? FeeStatus { get; set; } = "Paid";
+        public string? UserId { get; set; }
     }
 
 }

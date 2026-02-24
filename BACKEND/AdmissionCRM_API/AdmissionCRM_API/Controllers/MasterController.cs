@@ -26,7 +26,7 @@ namespace SOW.Controllers
             {
                 // Validation: If InstitutionName is provided, check for duplicates (case-insensitive) for active Institution
                 var existingInstitution = await _dbContext.Institution
-                    .FirstOrDefaultAsync(x => x.InstitutionName != null && x.InstitutionName.Equals(data.InstitutionName, StringComparison.OrdinalIgnoreCase) && x.IsActive == true);
+                    .FirstOrDefaultAsync(x => x.InstitutionName != null && x.InstitutionName.ToLower().Trim() == data.InstitutionName.ToLower().Trim() && x.InstitutionCode.ToLower().Trim() == data.InstitutionCode.ToLower().Trim() && x.IsActive == true);
 
                 if (existingInstitution != null && existingInstitution.InstitutionId != data.InstitutionId)
                 {
@@ -111,7 +111,7 @@ namespace SOW.Controllers
             {
                 var institutions = await _dbContext.Institution
                     .Where(x => x.IsActive == true)
-                    .OrderBy(x => x.CreatedOn)
+                    .OrderByDescending(x => x.CreatedOn)
                     .ToListAsync();
 
                 return Ok(new { success = true, message = "Institutions data fetched successfully", data = institutions });
@@ -198,7 +198,7 @@ namespace SOW.Controllers
             {
                 // Validation: Check if the Campus Name already exists under the same Institution
                 var existingCampus = await _dbContext.Campus
-                    .FirstOrDefaultAsync(x => x.CampusName != null && x.CampusName.Equals(data.CampusName, StringComparison.OrdinalIgnoreCase)
+                    .FirstOrDefaultAsync(x => x.CampusName != null && x.CampusName.ToLower().Trim() == data.CampusName.ToLower().Trim()
                                               && x.InstitutionId == data.InstitutionId
                                               && x.IsActive == true);
 
@@ -287,7 +287,7 @@ namespace SOW.Controllers
             {
                 var campuses = await _dbContext.Campus
                     .Where(x => x.IsActive == true)
-                    .OrderBy(x => x.CreatedOn)
+                    .OrderByDescending(x => x.CreatedOn)
                     .ToListAsync();
 
                 return Ok(new { success = true, message = "Campus data fetched successfully", data = campuses });
@@ -374,7 +374,7 @@ namespace SOW.Controllers
             {
                 // Validation: Check if the Department Name already exists under the same Campus
                 var existingDepartment = await _dbContext.Department
-                    .FirstOrDefaultAsync(x => x.DepartmentName != null && x.DepartmentName.Equals(data.DepartmentName, StringComparison.OrdinalIgnoreCase)
+                    .FirstOrDefaultAsync(x => x.DepartmentName != null && x.DepartmentName.ToLower().Trim() == data.DepartmentName.ToLower().Trim()
                                               && x.CampusId == data.CampusId
                                               && x.IsActive == true);
 
@@ -461,7 +461,7 @@ namespace SOW.Controllers
             {
                 var departments = await _dbContext.Department
                     .Where(x => x.IsActive == true)
-                    .OrderBy(x => x.CreatedOn)
+                    .OrderByDescending(x => x.CreatedOn)
                     .ToListAsync();
 
                 return Ok(new { success = true, message = "Department data fetched successfully", data = departments });
@@ -548,8 +548,8 @@ namespace SOW.Controllers
             {
                 // Validation: Check if a Program with the same Program Name and Course Type exists under the same Department
                 var existingProgram = await _dbContext.ProgramBranch
-                    .FirstOrDefaultAsync(x => x.ProgramName != null && x.ProgramName.Equals(data.ProgramName, StringComparison.OrdinalIgnoreCase)
-                                              && x.CourseType != null && x.CourseType.Equals(data.CourseType, StringComparison.OrdinalIgnoreCase)
+                    .FirstOrDefaultAsync(x => x.ProgramName != null && x.ProgramName.ToLower().Trim() == data.ProgramName.ToLower().Trim()
+                                              && x.CourseType != null && x.CourseType.ToLower().Trim() == data.CourseType.ToLower().Trim()
                                               && x.DepartmentId == data.DepartmentId
                                               && x.IsActive == true);
 
@@ -638,7 +638,7 @@ namespace SOW.Controllers
             {
                 var programBranches = await _dbContext.ProgramBranch
                     .Where(x => x.IsActive == true)
-                    .OrderBy(x => x.CreatedOn)
+                    .OrderByDescending(x => x.CreatedOn)
                     .ToListAsync();
 
                 return Ok(new { success = true, message = "Program Branch data fetched successfully", data = programBranches });
@@ -726,7 +726,7 @@ namespace SOW.Controllers
                 // Validation: Check if an Academic Year with the same YearLabel exists and is active
                 var existingAcademicYear = await _dbContext.AcademicYear
                     .FirstOrDefaultAsync(x => x.YearLabel != null
-                                              && x.YearLabel.Equals(data.YearLabel, StringComparison.OrdinalIgnoreCase)
+                                              && x.YearLabel.ToLower().Trim() == data.YearLabel.ToLower().Trim()
                                               && x.IsActive == true);
 
                 // If an existing active academic year with the same YearLabel is found
@@ -811,7 +811,7 @@ namespace SOW.Controllers
             {
                 var academicYears = await _dbContext.AcademicYear
                     .Where(x => x.IsActive == true)
-                    .OrderBy(x => x.CreatedOn)
+                    .OrderByDescending(x => x.CreatedOn)
                     .ToListAsync();
 
                 return Ok(new { success = true, message = "Academic Year data fetched successfully", data = academicYears });
@@ -899,7 +899,7 @@ namespace SOW.Controllers
                 // Validate for duplication while creating or updating
                 var existingEntryType = await _dbContext.EntryType
                     .FirstOrDefaultAsync(x => x.Name != null
-                                              && x.Name.Equals(data.Name, StringComparison.OrdinalIgnoreCase)
+                                              && x.Name.ToLower().Trim() == data.Name.ToLower().Trim()
                                               && x.IsActive == true);
 
                 // Check if an entry type with the same name exists and it's not the current record
@@ -984,7 +984,7 @@ namespace SOW.Controllers
             {
                 var entryTypes = await _dbContext.EntryType
                     .Where(x => x.IsActive == true)
-                    .OrderBy(x => x.CreatedOn)
+                    .OrderByDescending(x => x.CreatedOn)
                     .ToListAsync();
 
                 return Ok(new { success = true, message = "Entry Type data fetched successfully", data = entryTypes });
@@ -1073,7 +1073,7 @@ namespace SOW.Controllers
                 // Validate for duplication while creating or updating
                 var existingAdmissionMode = await _dbContext.AdmissionMode
                     .FirstOrDefaultAsync(x => x.AdmissionType != null
-                                              && x.AdmissionType.Equals(data.AdmissionType, StringComparison.OrdinalIgnoreCase)
+                                              && x.AdmissionType.ToLower().Trim() == data.AdmissionType.ToLower().Trim()
                                               && x.IsActive == true);
 
                 // Check if an AdmissionMode with the same AdmissionType exists and it's not the current record
@@ -1158,7 +1158,7 @@ namespace SOW.Controllers
             {
                 var admissionModes = await _dbContext.AdmissionMode
                     .Where(x => x.IsActive == true)
-                    .OrderBy(x => x.CreatedOn)
+                    .OrderByDescending(x => x.CreatedOn)
                     .ToListAsync();
 
                 return Ok(new { success = true, message = "Admission Mode data fetched successfully", data = admissionModes });
