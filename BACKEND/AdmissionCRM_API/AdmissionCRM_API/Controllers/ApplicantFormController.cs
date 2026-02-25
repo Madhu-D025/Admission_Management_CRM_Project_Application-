@@ -27,6 +27,24 @@ namespace AdmissionCRM_API.Controllers
             using var transaction = await _dbContext.Database.BeginTransactionAsync();
             try
             {
+                // 🔥 DUPLICATE CHECK
+                var duplicateApplicant = await _dbContext.ApplicantForm
+                    .FirstOrDefaultAsync(x =>
+                        x.FirstName == data.FirstName &&
+                        x.LastName == data.LastName &&
+                        x.DOB == data.DOB &&
+                        x.ApplicantId != data.ApplicantId &&
+                        x.IsActive == true);
+
+                if (duplicateApplicant != null)
+                {
+                    return Ok(new
+                    {
+                        success = false,
+                        message = "Applicant with same Name and PhoneNumber already exists."
+                    });
+                }
+
                 // 🔹 EXISTING SEAT VALIDATION (UNCHANGED)
                 var seatMatrix = await _dbContext.SeatMatrix
                     .FirstOrDefaultAsync(x =>
@@ -92,13 +110,7 @@ namespace AdmissionCRM_API.Controllers
                     };
 
                     await _docservice.DocumentsUpload(documentDto);
-
-                    //if (!uploadResult)
-                    //{
-                    //    await transaction.RollbackAsync();
-                    //    return Ok(new { success = false, message = "Document upload failed. Applicant creation rolled back." });
-                    //}
-
+                    await _dbContext.SaveChangesAsync();
                     uploadedDocCount = data.Documents.Count;
                 }
 

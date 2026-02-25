@@ -25,7 +25,7 @@ namespace AdmissionCRM_API.Controllers
                 // Validate for duplication while creating or updating
                 var existingQuota = await _dbContext.Quota
                     .FirstOrDefaultAsync(x => x.SeatMatrixId == data.SeatMatrixId
-                                              && x.Name.Equals(data.Name, StringComparison.OrdinalIgnoreCase)
+                                              && x.Name.ToLower().Trim() == data.Name.ToLower().Trim()
                                               && x.IsActive == true);
 
                 // Check if the combination of SeatMatrixId and QuotaName already exists
