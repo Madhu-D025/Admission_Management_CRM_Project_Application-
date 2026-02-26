@@ -113,10 +113,28 @@ namespace AdmissionCRM_API.Controllers
         {
             try
             {
-                var quotas = await _dbContext.Quota
-                    .Where(x => x.IsActive == true)
-                    .OrderBy(x => x.CreatedOn)
-                    .ToListAsync();
+                var quotas = await (from q in _dbContext.Quota
+                                    join s in _dbContext.SeatMatrix on q.SeatMatrixId equals s.SeatMatrixId
+                                    join p in _dbContext.ProgramBranch on s.ProgramId equals p.ProgramId
+                                    join a in _dbContext.AcademicYear on s.AcademicYearId equals a.AcademicYearId
+                                    join e in _dbContext.EntryType on s.EntryTypeId equals e.EntryTypeId
+                                    join am in _dbContext.AdmissionMode on s.AdmissionModeId equals am.AdmissionModeId
+                                    where q.IsActive == true
+                                    orderby q.CreatedOn
+                                    select new
+                                    {
+                                        q.QuotaId,
+                                        q.SeatMatrixId,
+                                        SeatMatrixInfo = $"{p.ProgramName}-{p.CourseType} | {a.YearLabel} | {e.Name} | {am.AdmissionType}",
+                                        q.Name,
+                                        q.TotalQuota,
+                                        q.RemainingQuota,
+                                        q.IsActive,
+                                        q.CreatedOn,
+                                        q.CreatedBy,
+                                        q.ModifiedOn,
+                                        q.ModifiedBy
+                                    }).ToListAsync();
 
                 return Ok(new { success = true, message = "Quota data fetched successfully", data = quotas });
             }
@@ -136,8 +154,27 @@ namespace AdmissionCRM_API.Controllers
                     return Ok(new { success = false, message = "Invalid Quota Id." });
                 }
 
-                var quota = await _dbContext.Quota
-                    .FirstOrDefaultAsync(x => x.QuotaId == id && x.IsActive == true);
+                var quota = await (from q in _dbContext.Quota
+                                   join s in _dbContext.SeatMatrix on q.SeatMatrixId equals s.SeatMatrixId
+                                   join p in _dbContext.ProgramBranch on s.ProgramId equals p.ProgramId
+                                   join a in _dbContext.AcademicYear on s.AcademicYearId equals a.AcademicYearId
+                                   join e in _dbContext.EntryType on s.EntryTypeId equals e.EntryTypeId
+                                   join am in _dbContext.AdmissionMode on s.AdmissionModeId equals am.AdmissionModeId
+                                   where q.QuotaId == id && q.IsActive == true
+                                   select new
+                                   {
+                                       q.QuotaId,
+                                       q.SeatMatrixId,
+                                       SeatMatrixInfo = $"{p.ProgramName}-{p.CourseType} | {a.YearLabel} | {e.Name} | {am.AdmissionType}",
+                                       q.Name,
+                                       q.TotalQuota,
+                                       q.RemainingQuota,
+                                       q.IsActive,
+                                       q.CreatedOn,
+                                       q.CreatedBy,
+                                       q.ModifiedOn,
+                                       q.ModifiedBy
+                                   }).FirstOrDefaultAsync();
 
                 if (quota == null)
                 {

@@ -231,6 +231,7 @@ namespace SOW.Controllers
                         }
                     }
 
+                    UpdateField("InstitutionId", campusToUpdate.InstitutionId, data.InstitutionId, val => campusToUpdate.InstitutionId = val);
                     UpdateField("CampusName", campusToUpdate.CampusName, data.CampusName, val => campusToUpdate.CampusName = val);
                     UpdateField("City", campusToUpdate.City, data.City, val => campusToUpdate.City = val);
                     UpdateField("IsActive", campusToUpdate.IsActive, data.IsActive, val => campusToUpdate.IsActive = val);
@@ -285,10 +286,25 @@ namespace SOW.Controllers
         {
             try
             {
-                var campuses = await _dbContext.Campus
-                    .Where(x => x.IsActive == true)
-                    .OrderByDescending(x => x.CreatedOn)
-                    .ToListAsync();
+                var campuses = await (from c in _dbContext.Campus
+                                      join i in _dbContext.Institution
+                                      on c.InstitutionId equals i.InstitutionId
+                                      where c.IsActive == true
+                                      orderby c.CreatedOn descending
+                                      select new
+                                      {
+                                          c.CampusId,
+                                          c.CampusName,
+                                          c.City,
+                                          c.InstitutionId,
+                                          InstitutionName = i.InstitutionName,
+                                          c.IsActive,
+                                          c.CreatedOn,
+                                          c.CreatedBy,
+                                          c.ModifiedOn,
+                                          c.ModifiedBy
+                                      }).ToListAsync();
+
 
                 return Ok(new { success = true, message = "Campus data fetched successfully", data = campuses });
             }
@@ -308,8 +324,24 @@ namespace SOW.Controllers
                     return Ok(new { success = false, message = "Invalid Campus Id." });
                 }
 
-                var campus = await _dbContext.Campus
-                    .FirstOrDefaultAsync(x => x.CampusId == id && x.IsActive == true);
+                var Institution = await _dbContext.Institution.ToListAsync();
+
+                var campus = (from c in _dbContext.Campus
+                              join i in _dbContext.Institution on c.InstitutionId equals i.InstitutionId
+                              where c.CampusId == id && c.IsActive == true
+                              select new
+                              {
+                                  c.CampusId,
+                                  c.CampusName,
+                                  c.City,
+                                  c.InstitutionId,
+                                  InstitutionName = i.InstitutionName,
+                                  c.IsActive,
+                                  c.CreatedOn,
+                                  c.CreatedBy,
+                                  c.ModifiedOn,
+                                  c.ModifiedBy
+                              }).FirstOrDefault();
 
                 if (campus == null)
                 {
@@ -459,10 +491,23 @@ namespace SOW.Controllers
         {
             try
             {
-                var departments = await _dbContext.Department
-                    .Where(x => x.IsActive == true)
-                    .OrderByDescending(x => x.CreatedOn)
-                    .ToListAsync();
+                var departments = await (from d in _dbContext.Department
+                                         join c in _dbContext.Campus
+                                         on d.CampusId equals c.CampusId
+                                         where d.IsActive == true
+                                         orderby d.CreatedOn descending
+                                         select new
+                                         {
+                                             d.DepartmentId,
+                                             d.DepartmentName,
+                                             d.CampusId,
+                                             CampusName = c.CampusName,
+                                             d.IsActive,
+                                             d.CreatedOn,
+                                             d.CreatedBy,
+                                             d.ModifiedOn,
+                                             d.ModifiedBy
+                                         }).ToListAsync();
 
                 return Ok(new { success = true, message = "Department data fetched successfully", data = departments });
             }
@@ -478,17 +523,27 @@ namespace SOW.Controllers
             try
             {
                 if (id <= 0)
-                {
                     return Ok(new { success = false, message = "Invalid Department Id." });
-                }
 
-                var department = await _dbContext.Department
-                    .FirstOrDefaultAsync(x => x.DepartmentId == id && x.IsActive == true);
+                var department = await (from d in _dbContext.Department
+                                        join c in _dbContext.Campus
+                                        on d.CampusId equals c.CampusId
+                                        where d.DepartmentId == id && d.IsActive == true
+                                        select new
+                                        {
+                                            d.DepartmentId,
+                                            d.DepartmentName,
+                                            d.CampusId,
+                                            CampusName = c.CampusName,
+                                            d.IsActive,
+                                            d.CreatedOn,
+                                            d.CreatedBy,
+                                            d.ModifiedOn,
+                                            d.ModifiedBy
+                                        }).FirstOrDefaultAsync();
 
                 if (department == null)
-                {
                     return Ok(new { success = false, message = $"Department with Id {id} not found." });
-                }
 
                 return Ok(new { success = true, message = "Department data fetched successfully", data = department });
             }
@@ -636,10 +691,23 @@ namespace SOW.Controllers
         {
             try
             {
-                var programBranches = await _dbContext.ProgramBranch
-                    .Where(x => x.IsActive == true)
-                    .OrderByDescending(x => x.CreatedOn)
-                    .ToListAsync();
+                var programBranches = (from p in _dbContext.ProgramBranch
+                                       join d in _dbContext.Department on p.DepartmentId equals d.DepartmentId
+                                       where p.IsActive == true
+                                       orderby p.CreatedOn descending
+                                       select new
+                                       {
+                                           p.ProgramId,
+                                           p.ProgramName,
+                                           p.CourseType,
+                                           p.DepartmentId,
+                                           DepartmentName = d.DepartmentName,
+                                           p.IsActive,
+                                           p.CreatedOn,
+                                           p.CreatedBy,
+                                           p.ModifiedOn,
+                                           p.ModifiedBy
+                                       }).ToListAsync();
 
                 return Ok(new { success = true, message = "Program Branch data fetched successfully", data = programBranches });
             }
@@ -659,8 +727,22 @@ namespace SOW.Controllers
                     return Ok(new { success = false, message = "Invalid Program Branch Id." });
                 }
 
-                var programBranch = await _dbContext.ProgramBranch
-                    .FirstOrDefaultAsync(x => x.ProgramId == id && x.IsActive == true);
+                var programBranch = (from p in _dbContext.ProgramBranch
+                                     join d in _dbContext.Department on p.DepartmentId equals d.DepartmentId
+                                     where p.ProgramId == id && p.IsActive == true
+                                     select new
+                                     {
+                                         p.ProgramId,
+                                         p.ProgramName,
+                                         p.CourseType,
+                                         p.DepartmentId,
+                                         DepartmentName = d.DepartmentName,
+                                         p.IsActive,
+                                         p.CreatedOn,
+                                         p.CreatedBy,
+                                         p.ModifiedOn,
+                                         p.ModifiedBy
+                                     }).FirstOrDefaultAsync();
 
                 if (programBranch == null)
                 {

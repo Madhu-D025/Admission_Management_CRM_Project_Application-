@@ -117,10 +117,32 @@ namespace AdmissionCRM_API.Controllers
         {
             try
             {
-                var seatMatrices = await _dbContext.SeatMatrix
-                    .Where(x => x.IsActive == true)
-                    .OrderBy(x => x.CreatedOn)
-                    .ToListAsync();
+                var seatMatrices = await (from s in _dbContext.SeatMatrix
+                                          join p in _dbContext.ProgramBranch on s.ProgramId equals p.ProgramId
+                                          join a in _dbContext.AcademicYear on s.AcademicYearId equals a.AcademicYearId
+                                          join e in _dbContext.EntryType on s.EntryTypeId equals e.EntryTypeId
+                                          join am in _dbContext.AdmissionMode on s.AdmissionModeId equals am.AdmissionModeId
+                                          where s.IsActive == true
+                                          orderby s.CreatedOn descending
+                                          select new
+                                          {
+                                              s.SeatMatrixId,
+                                              s.ProgramId,
+                                              ProgramName = $"{p.ProgramName}-{p.CourseType}",
+                                              SeatMatrixInfo = $"{p.ProgramName}-{p.CourseType} | {a.YearLabel} | {e.Name} | {am.AdmissionType}",
+                                              s.AcademicYearId,
+                                              AcademicYear = a.YearLabel,
+                                              s.EntryTypeId,
+                                              EntryType = e.Name,
+                                              s.AdmissionModeId,
+                                              AdmissionMode = am.AdmissionType,
+                                              s.TotalSeats,
+                                              s.RemainingSeats,
+                                              s.CreatedBy,
+                                              s.CreatedOn,
+                                              s.ModifiedBy,
+                                              s.ModifiedOn
+                                          }).ToListAsync(); 
 
                 return Ok(new { success = true, message = "Seat Matrix data fetched successfully", data = seatMatrices });
             }
@@ -136,17 +158,35 @@ namespace AdmissionCRM_API.Controllers
             try
             {
                 if (id <= 0)
-                {
                     return Ok(new { success = false, message = "Invalid Seat Matrix Id." });
-                }
 
-                var seatMatrix = await _dbContext.SeatMatrix
-                    .FirstOrDefaultAsync(x => x.SeatMatrixId == id && x.IsActive == true);
+                var seatMatrix = await (from s in _dbContext.SeatMatrix
+                                        join p in _dbContext.ProgramBranch on s.ProgramId equals p.ProgramId
+                                        join a in _dbContext.AcademicYear on s.AcademicYearId equals a.AcademicYearId
+                                        join e in _dbContext.EntryType on s.EntryTypeId equals e.EntryTypeId
+                                        join am in _dbContext.AdmissionMode on s.AdmissionModeId equals am.AdmissionModeId
+                                        where s.SeatMatrixId == id && s.IsActive == true
+                                        select new
+                                        {
+                                            s.SeatMatrixId,
+                                            s.ProgramId,
+                                            ProgramName = $"{p.ProgramName}-{p.CourseType}",
+                                            s.AcademicYearId,
+                                            AcademicYear = a.YearLabel,
+                                            s.EntryTypeId,
+                                            EntryType = e.Name,
+                                            s.AdmissionModeId,
+                                            AdmissionMode = am.AdmissionType,
+                                            s.TotalSeats,
+                                            s.RemainingSeats,
+                                            s.CreatedBy,
+                                            s.CreatedOn,
+                                            s.ModifiedBy,
+                                            s.ModifiedOn
+                                        }).FirstOrDefaultAsync();
 
                 if (seatMatrix == null)
-                {
                     return Ok(new { success = false, message = $"Seat Matrix with Id {id} not found." });
-                }
 
                 return Ok(new { success = true, message = "Seat Matrix data fetched successfully", data = seatMatrix });
             }
