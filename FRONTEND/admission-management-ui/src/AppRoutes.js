@@ -31,7 +31,8 @@ const AdmissionMode = lazy(() => import("./components/All-Masters/AdmissionModeM
 const SeatMatrix = lazy(() => import("./components/Seat-Matrix/SeatMatrixMasters"));
 const Quota = lazy(() => import("./components/Quota/QuotaMasters"));
 const ApplicantForm = lazy(() => import("./components/ApplicantForm/ApplicantForm"));
-
+const DocumentVerification = lazy(() => import("./components/Document-Verification/DocumentVerification"));
+const FeeManagement = lazy(() => import("./components/Fee-Management/FeeManagement"));
 
 
 const AppRoutes = () => {
@@ -60,6 +61,9 @@ const AppRoutes = () => {
           <Route path="/program-master" element={<Programs />} />
           <Route path="/seat-matrix-management" element={<SeatMatrix />} />
           <Route path="/quota-management" element={<Quota />} />
+          <Route path="/applicant-management" element={<ApplicantForm />} />
+          <Route path="/document-verification" element={<DocumentVerification />} />
+          <Route path="/fee-management" element={<FeeManagement />} />
           {/* <Route path="/inbound/gate-entry" element={<GateEntry />} />
           <Route path="/inbound/grn" element={<GRN />} />
           <Route path="/inbound/putaway" element={<Putaway />} />

@@ -140,10 +140,48 @@ namespace AdmissionCRM_API.Controllers
         {
             try
             {
-                var data = await _dbContext.ApplicantForm
-                    .Where(x => x.IsActive == true)
-                    .OrderByDescending(x => x.CreatedOn)
-                    .ToListAsync();
+                var data = await (from a in _dbContext.ApplicantForm
+                                  join p in _dbContext.ProgramBranch on a.ProgramId equals p.ProgramId
+                                  join q in _dbContext.Quota on a.QuotaId equals q.QuotaId
+                                  join e in _dbContext.EntryType on a.EntryTypeId equals e.EntryTypeId
+                                  join am in _dbContext.AdmissionMode on a.AdmissionModeId equals am.AdmissionModeId
+                                  join ay in _dbContext.AcademicYear on a.AcademicYearId equals ay.AcademicYearId
+                                  where a.IsActive == true
+                                  orderby a.CreatedOn descending
+                                  select new
+                                  {
+                                      a.ApplicantId,
+                                      a.FirstName,
+                                      a.LastName,
+                                      a.DOB,
+                                      a.Category,
+
+                                      e.EntryTypeId,
+                                      EntryType = e.Name,
+
+                                      am.AdmissionModeId,
+                                      AdmissionMode = am.AdmissionType,
+
+                                      p.ProgramId,
+                                      ProgramName = $"{p.ProgramName}-{p.CourseType}",
+
+                                      ay.AcademicYearId,
+                                      AcademicYear = ay.YearLabel,
+
+                                      q.QuotaId,
+                                      QuotaName = q.Name,
+
+                                      a.Marks,
+                                      a.DocumentStatus,
+                                      a.FeeStatus,
+                                      a.AdmissionNumber,
+                                      a.IsActive,
+
+                                      a.CreatedOn,
+                                      a.CreatedBy,
+                                      a.ModifiedOn,
+                                      a.ModifiedBy
+                                  }).ToListAsync();   // ✅ Execute query
 
                 return Ok(new { success = true, message = "Applicant data fetched successfully", data = data });
             }
@@ -163,8 +201,47 @@ namespace AdmissionCRM_API.Controllers
                     return Ok(new { success = false, message = "Invalid Applicant Id." });
                 }
 
-                var data = await _dbContext.ApplicantForm
-                    .FirstOrDefaultAsync(x => x.ApplicantId == id && x.IsActive == true);
+                var data = await (from a in _dbContext.ApplicantForm
+                                  join p in _dbContext.ProgramBranch on a.ProgramId equals p.ProgramId
+                                  join q in _dbContext.Quota on a.QuotaId equals q.QuotaId
+                                  join e in _dbContext.EntryType on a.EntryTypeId equals e.EntryTypeId
+                                  join am in _dbContext.AdmissionMode on a.AdmissionModeId equals am.AdmissionModeId
+                                  join ay in _dbContext.AcademicYear on a.AcademicYearId equals ay.AcademicYearId
+                                  where a.ApplicantId == id && a.IsActive == true
+                                  select new
+                                  {
+                                      a.ApplicantId,
+                                      a.FirstName,
+                                      a.LastName,
+                                      a.DOB,
+                                      a.Category,
+
+                                      e.EntryTypeId,
+                                      EntryType = e.Name,
+
+                                      am.AdmissionModeId,
+                                      AdmissionMode = am.AdmissionType,
+
+                                      p.ProgramId,
+                                      ProgramName = $"{p.ProgramName}-{p.CourseType}",
+
+                                      ay.AcademicYearId,
+                                      AcademicYear = ay.YearLabel,
+
+                                      q.QuotaId,
+                                      QuotaName = q.Name,
+
+                                      a.Marks,
+                                      a.DocumentStatus,
+                                      a.FeeStatus,
+                                      a.AdmissionNumber,
+                                      a.IsActive,
+
+                                      a.CreatedOn,
+                                      a.CreatedBy,
+                                      a.ModifiedOn,
+                                      a.ModifiedBy
+                                  }).FirstOrDefaultAsync();   // ✅ Single record
 
                 if (data == null)
                 {
