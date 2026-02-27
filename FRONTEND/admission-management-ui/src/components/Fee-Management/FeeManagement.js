@@ -41,7 +41,7 @@ function FeeManagement() {
     setIsTableLoading(true);
     try {
       const res = await axios.get(
-        `${config.API_URL}ApplicantForm/GetAllApplicantFormDetails`
+        `${config.API_URL}ApplicantForm/GetAllApplicantFormDetailsForFeeManagement`
       );
       if (res.data.success) {
         setApplicants(extractArray(res.data.data));

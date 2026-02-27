@@ -6,7 +6,7 @@
   "API_URL": "https://localhost:44340/api/",
   "Attachment": "https://localhost:44340/api/",
   "deploymentMode": "staging",
-  "PoweredBy": "Powered by ITEOS",
+  "PoweredBy": "Powered by AMS",
   "headers1": {
     "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8"
   },

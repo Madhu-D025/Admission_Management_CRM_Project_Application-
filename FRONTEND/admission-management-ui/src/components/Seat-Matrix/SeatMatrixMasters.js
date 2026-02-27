@@ -244,7 +244,7 @@ function SeatMatrixMasters() {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        `${config.API_URL}MasterController/CreateOrUpdateSeatMatrix`,
+        `${config.API_URL}SeatMatrix/CreateOrUpdateSeatMatrix`,
         body
       );
       if (res.data.success) {
@@ -296,7 +296,7 @@ function SeatMatrixMasters() {
   const handleDelete = async (item) => {
     setIsLoading(true);
     try {
-      const url = `${config.API_URL}MasterController/DeleteSeatMatrixById?id=${item.seatMatrixId}&UserId=${personalInfo.userID}`;
+      const url = `${config.API_URL}SeatMatrix/DeleteSeatMatrixById?id=${item.seatMatrixId}&UserId=${personalInfo.userID}`;
       const res = await axios.post(url);
       if (res.data.success) {
         toast.success(res.data.message || "Deleted successfully");

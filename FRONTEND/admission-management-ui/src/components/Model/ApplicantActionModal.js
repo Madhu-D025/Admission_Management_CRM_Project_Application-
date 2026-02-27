@@ -44,7 +44,7 @@ function ApplicantActionModal({ isOpen, onApprove, onCancel, isLoading, message 
 
             <div className="modal-body">
               <p className="mb-0">
-                {message || "Are you verified the respective user documents?"}
+                {message || "Please confirm that you have verified the applicant’s documents and checked whether the fee has been paid?"}
               </p>
             </div>
 

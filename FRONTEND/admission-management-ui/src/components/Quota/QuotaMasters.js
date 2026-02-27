@@ -156,7 +156,7 @@ function QuotaMasters() {
     setIsLoading(true);
     try {
       const res = await axios.post(
-        `${config.API_URL}MasterController/CreateOrUpdateQuota`,
+        `${config.API_URL}Quota/CreateOrUpdateQuota`,
         body
       );
       if (res.data.success) {
@@ -206,7 +206,7 @@ function QuotaMasters() {
   const handleDelete = async (item) => {
     setIsLoading(true);
     try {
-      const url = `${config.API_URL}MasterController/DeleteQuotaById?id=${item.quotaId}&UserId=${personalInfo.userID}`;
+      const url = `${config.API_URL}Quota/DeleteQuotaById?id=${item.quotaId}&UserId=${personalInfo.userID}`;
       const res = await axios.post(url);
       if (res.data.success) {
         toast.success(res.data.message || "Deleted successfully");

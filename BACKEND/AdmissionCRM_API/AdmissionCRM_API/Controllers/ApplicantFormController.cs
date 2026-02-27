@@ -378,6 +378,119 @@ namespace AdmissionCRM_API.Controllers
             }
         }
 
+        [HttpGet("GetAllApplicantFormDetailsForDocumentVerification")]
+        public async Task<IActionResult> GetAllApplicantFormDetailsForDocumentVerification()
+        {
+            try
+            {
+                var data = await (from a in _dbContext.ApplicantForm
+                                  join p in _dbContext.ProgramBranch on a.ProgramId equals p.ProgramId
+                                  join q in _dbContext.Quota on a.QuotaId equals q.QuotaId
+                                  join e in _dbContext.EntryType on a.EntryTypeId equals e.EntryTypeId
+                                  join am in _dbContext.AdmissionMode on a.AdmissionModeId equals am.AdmissionModeId
+                                  join ay in _dbContext.AcademicYear on a.AcademicYearId equals ay.AcademicYearId
+                                  where a.IsActive == true && a.DocumentStatus == "Submitted"
+                                  orderby a.CreatedOn descending
+                                  select new
+                                  {
+                                      a.ApplicantId,
+                                      a.FirstName,
+                                      a.LastName,
+                                      a.DOB,
+                                      a.Category,
+
+                                      e.EntryTypeId,
+                                      EntryType = e.Name,
+
+                                      am.AdmissionModeId,
+                                      AdmissionMode = am.AdmissionType,
+
+                                      p.ProgramId,
+                                      ProgramName = $"{p.ProgramName}-{p.CourseType}",
+
+                                      ay.AcademicYearId,
+                                      AcademicYear = ay.YearLabel,
+
+                                      q.QuotaId,
+                                      QuotaName = q.Name,
+
+                                      a.Marks,
+                                      a.DocumentStatus,
+                                      a.FeeStatus,
+                                      a.AdmissionNumber,
+                                      a.IsActive,
+
+                                      a.CreatedOn,
+                                      a.CreatedBy,
+                                      a.ModifiedOn,
+                                      a.ModifiedBy
+                                  }).ToListAsync();   // ✅ Execute query
+
+                return Ok(new { success = true, message = "Applicant data fetched successfully", data = data });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet("GetAllApplicantFormDetailsForFeeManagement")]
+        public async Task<IActionResult> GetAllApplicantFormDetailsForFeeManagement()
+        {
+            try
+            {
+                var data = await (from a in _dbContext.ApplicantForm
+                                  join p in _dbContext.ProgramBranch on a.ProgramId equals p.ProgramId
+                                  join q in _dbContext.Quota on a.QuotaId equals q.QuotaId
+                                  join e in _dbContext.EntryType on a.EntryTypeId equals e.EntryTypeId
+                                  join am in _dbContext.AdmissionMode on a.AdmissionModeId equals am.AdmissionModeId
+                                  join ay in _dbContext.AcademicYear on a.AcademicYearId equals ay.AcademicYearId
+                                  where a.IsActive == true && a.FeeStatus == "Pending"
+                                  orderby a.CreatedOn descending
+                                  select new
+                                  {
+                                      a.ApplicantId,
+                                      a.FirstName,
+                                      a.LastName,
+                                      a.DOB,
+                                      a.Category,
+
+                                      e.EntryTypeId,
+                                      EntryType = e.Name,
+
+                                      am.AdmissionModeId,
+                                      AdmissionMode = am.AdmissionType,
+
+                                      p.ProgramId,
+                                      ProgramName = $"{p.ProgramName}-{p.CourseType}",
+
+                                      ay.AcademicYearId,
+                                      AcademicYear = ay.YearLabel,
+
+                                      q.QuotaId,
+                                      QuotaName = q.Name,
+
+                                      a.Marks,
+                                      a.DocumentStatus,
+                                      a.FeeStatus,
+                                      a.AdmissionNumber,
+                                      a.IsActive,
+
+                                      a.CreatedOn,
+                                      a.CreatedBy,
+                                      a.ModifiedOn,
+                                      a.ModifiedBy
+                                  }).ToListAsync();   // ✅ Execute query
+
+                return Ok(new { success = true, message = "Applicant data fetched successfully", data = data });
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { success = false, message = ex.Message });
+            }
+        }
+
+
         #endregion
 
         #region Document Status Update API

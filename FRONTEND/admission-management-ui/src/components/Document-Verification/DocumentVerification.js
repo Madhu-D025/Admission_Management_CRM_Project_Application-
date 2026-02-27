@@ -42,7 +42,7 @@ function DocumentVerification() {
     setIsTableLoading(true);
     try {
       const res = await axios.get(
-        `${config.API_URL}ApplicantForm/GetAllApplicantFormDetails`
+        `${config.API_URL}ApplicantForm/GetAllApplicantFormDetailsForDocumentVerification`
       );
       if (res.data.success) {
         setApplicants(extractArray(res.data.data));
