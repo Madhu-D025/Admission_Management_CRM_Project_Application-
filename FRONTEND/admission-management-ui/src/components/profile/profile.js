@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import ProfileImg from "../../assets/images/user2-160x160.jpg"
 
 const config = require("../../services/config.json");
+
 const Profile = () => {
   const inputCurrentPasswordReference = useRef(null);
   const inputNewPasswordReference = useRef(null);
@@ -19,35 +20,33 @@ const Profile = () => {
 
   const personalInfo = useSelector((state) => state.personalInformationReducer);
 
-  const [lastName, setLastName] = useState("");
-  const [mobileNumber, setMobileNumber] = useState("");
-  const [address, setAddress] = useState("");
-  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [instituteOrBranch, setInstituteOrBranch] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [profileDetails, setProfileDetails] = useState([]);
   const [isLoaderActive, setIsLoaderActive] = useState(false);
-  const [firstName, setFirstName] = useState("");
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
   useEffect(() => {
     getProfileDetails();
     window.initDatePickerFuncation();
   }, []);
 
   const resetProfileUpdate = () => {
-    setFirstName("");
-    setLastName("");
-    setDateOfBirth("");
-    setMobileNumber("");
-    setAddress("");
+    setFullName("");
+    setPhoneNumber("");
+    setInstituteOrBranch("");
   };
 
   useEffect(() => {}, [profileDetails]);
+
   const handleChangePassSubmit = (e) => {
     e.preventDefault();
     if (!removeExtraSpaces(currentPassword)) {
@@ -128,30 +127,30 @@ const Profile = () => {
   };
 
   const inputmobileNumberReference = useRef();
+  const inputInstituteReference = useRef();
 
   const handleEditProfileDetails = (e) => {
     e.preventDefault();
-    if (!mobileNumber) {
+    if (!phoneNumber) {
       toast.error("Please enter contact number.");
       inputmobileNumberReference.current.focus();
       inputmobileNumberReference.current.classList.add("is-invalid");
       return;
     }
 
-    if (mobileNumber.length !== 10 || !/^\d+$/.test(mobileNumber)) {
+    if (phoneNumber.length !== 10 || !/^\d+$/.test(phoneNumber)) {
       toast.error("Please enter a valid 10-digit contact number.");
       inputmobileNumberReference.current.focus();
       inputmobileNumberReference.current.classList.add("is-invalid");
       return;
     }
+
     setIsLoaderActive(true);
     const formData = new FormData();
     formData.append("UserID", personalInfo.userID);
-    formData.append("FirstName", firstName || profileDetails.firstName);
-    formData.append("LastName", lastName || profileDetails.lastName);
-    formData.append("address", address || profileDetails.address);
-    formData.append("ContactNumber", mobileNumber || profileDetails.mobile);
-    formData.append("dateOfBirth", dateOfBirth || profileDetails.dateOfBirth);
+    formData.append("fullName", fullName || profileDetails.fullName);
+    formData.append("phoneNumber", phoneNumber || profileDetails.phoneNumber);
+    formData.append("instituteOrBranch", instituteOrBranch || profileDetails.instituteOrBranch);
     formData.append("modifiedBy", personalInfo.userID);
     formData.append("ClientId", "wmsApp");
 
@@ -185,7 +184,7 @@ const Profile = () => {
       .then((response) => {
         if (response.status === 200 && response.data.success) {
           if (response.data.data && response.data.data.length > 0) {
-            const user = response.data.data[0]; // 👈 pick first element
+            const user = response.data.data[0];
 
             const formattedProfileDetails = {
               ...user,
@@ -196,11 +195,9 @@ const Profile = () => {
             };
 
             setProfileDetails(formattedProfileDetails);
-            setFirstName(formattedProfileDetails.firstName);
-            setLastName(formattedProfileDetails.lastName);
-            setMobileNumber(formattedProfileDetails.contactNumber);
-            setAddress(formattedProfileDetails.address);
-            setDateOfBirth(formattedProfileDetails.dateOfBirth);
+            setFullName(formattedProfileDetails.fullName || "");
+            setPhoneNumber(formattedProfileDetails.phoneNumber || "");
+            setInstituteOrBranch(formattedProfileDetails.instituteOrBranch || "");
           } else {
             setProfileDetails({});
           }
@@ -298,13 +295,8 @@ const Profile = () => {
                 </div>
 
                 <h5 className="profile-username text-center mt-3">
-                  {profileDetails.firstName} {profileDetails.lastName}
+                  {profileDetails.fullName || personalInfo.userName}
                 </h5>
-
-                {/* Optional: Department or role */}
-                {/* <p className="text-muted text-center">
-    [ {profileDetails.department} - Department ]
-</p> */}
               </div>
             </div>
             <div className="card ">
@@ -333,7 +325,7 @@ const Profile = () => {
                       href="https://www.iteos.in/"
                       className=" footer-link"
                     >
-                      https://www.iteos.in/
+                      [https://www.iteos.in/](https://www.iteos.in/)
                     </a>
                   </span>
                 </strong>
@@ -386,69 +378,36 @@ const Profile = () => {
                       <form className="form-horizontal mt-3">
                         <div className="row mb-2">
                           <label className="col-md-2 text-md-end">
-                            First Name :
+                            Full Name :
                           </label>
                           <div className="col-md-10">
                             <p className="text-muted">
-                              {profileDetails.firstName}
+                              {profileDetails.fullName}
                             </p>
                           </div>
                         </div>
 
                         <div className="row mb-2">
                           <label className="col-md-2 text-md-end">
-                            Last Name :
+                            Phone Number :
                           </label>
                           <div className="col-md-10">
                             <p className="text-muted">
-                              {profileDetails.lastName}
+                              {profileDetails.phoneNumber}
                             </p>
                           </div>
                         </div>
 
                         <div className="row mb-2">
                           <label className="col-md-2 text-md-end">
-                            Mobile No. :
+                            Institute/Branch :
                           </label>
                           <div className="col-md-10">
                             <p className="text-muted">
-                              {profileDetails.contactNumber}
+                              {profileDetails.instituteOrBranch}
                             </p>
                           </div>
                         </div>
-
-                        {/* <div className="row mb-2">
-                          <label className="col-md-2 text-md-end">
-                            Department :
-                          </label>
-                          <div className="col-md-10">
-                            <p className="text-muted">
-                              {profileDetails.department}
-                            </p>
-                          </div>
-                        </div> */}
-
-                        <div className="row mb-2">
-                          <label className="col-md-2 text-md-end">
-                            Address :
-                          </label>
-                          <div className="col-md-10">
-                            <p className="text-muted">
-                              {profileDetails.address}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* <div className="row mb-2">
-                          <label className="col-md-2 text-md-end">
-                            Date of Birth :
-                          </label>
-                          <div className="col-md-10">
-                            <p className="text-muted">
-                              {profileDetails.dateOfBirth}
-                            </p>
-                          </div>
-                        </div> */}
 
                         <div className="row mb-2">
                           <label className="col-md-2 text-md-end">
@@ -460,17 +419,6 @@ const Profile = () => {
                             </p>
                           </div>
                         </div>
-
-                        {/* <div className="row mb-2">
-                          <label className="col-md-2 text-md-end">
-                            Joining Date :
-                          </label>
-                          <div className="col-md-10">
-                            <p className="text-muted">
-                              {profileDetails.joiningDate}
-                            </p>
-                          </div>
-                        </div> */}
                       </form>
                     </div>
                   </div>
@@ -480,82 +428,6 @@ const Profile = () => {
                         <h5 className="m-20">Change Password</h5>
                       </div>
                     </div>
-                    {/* <form className="form-horizontal mt-3">
-                      <div className="form-group row">
-                        <label
-                          htmlFor="currentPassword"
-                          className="col-sm-2 col-form-label"
-                        >
-                          Current Password
-                        </label>
-                        <div className="col-sm-10">
-                          <input
-                            type="password"
-                            className="form-control form-control-sm"
-                            id="currentPassword"
-                            placeholder="Enter Current Password"
-                            ref={inputCurrentPasswordReference}
-                            value={currentPassword}
-                            onChange={(e) => setCurrentPassword(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="form-group row">
-                        <label
-                          htmlFor="newPassword"
-                          className="col-sm-2 col-form-label"
-                        >
-                          New Password
-                        </label>
-                        <div className="col-sm-10">
-                          <input
-                            type="password"
-                            className="form-control form-control-sm"
-                            id="newPassword"
-                            placeholder="Enter New Password"
-                            ref={inputNewPasswordReference}
-                            value={newPassword}
-                            onChange={(e) => setNewPassword(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="form-group row">
-                        <label
-                          htmlFor="confirmPassword"
-                          className="col-sm-2 col-form-label"
-                        >
-                          Confirm Password
-                        </label>
-                        <div className="col-sm-10">
-                          <input
-                            type="password"
-                            className="form-control form-control-sm"
-                            id="confirmPassword"
-                            placeholder="Enter Confirm Password"
-                            ref={inputConfirmPasswordReference}
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="">
-                        <div className="d-flex justify-content-end">
-                          {isLoaderActive ? (
-                            <PleaseWaitButton className="float-right btn-sm ml-2 font-weight-medium auth-form-btn" />
-                          ) : (
-                            <button
-                              type="button"
-                              className="custom-success-button"
-                              onClick={(e) => {
-                                handleChangePassSubmit(e);
-                              }}
-                            >
-                              Submit
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </form> */}
                     <form className="form-horizontal mt-3">
                       {/* Current Password */}
                       <div className="form-group row">
@@ -702,103 +574,64 @@ const Profile = () => {
                     >
                       <div className="form-group row">
                         <label
-                          htmlFor="FirstName"
+                          htmlFor="fullName"
                           className="col-sm-2 col-form-label"
                         >
-                          First Name
+                          Full Name
                         </label>
                         <div className="col-sm-10">
                           <input
                             type="text"
                             className="form-control form-control-sm"
-                            id="FirstName"
-                            placeholder="First Name"
-                            value={firstName}
-                            onChange={(e) => setFirstName(e.target.value)}
+                            id="fullName"
+                            placeholder="Full Name"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
                           />
                         </div>
                       </div>
                       <div className="form-group row">
                         <label
-                          htmlFor="LastName"
+                          htmlFor="phoneNumber"
                           className="col-sm-2 col-form-label"
                         >
-                          Last Name
+                          Phone Number
                         </label>
                         <div className="col-sm-10">
                           <input
                             type="text"
                             className="form-control form-control-sm"
-                            id="LastName"
-                            placeholder="Last Name"
-                            value={lastName}
-                            onChange={(e) => setLastName(e.target.value)}
-                          />
-                        </div>
-                      </div>
-                      <div className="form-group row">
-                        <label
-                          htmlFor="mobileNumber"
-                          className="col-sm-2 col-form-label"
-                        >
-                          Mobile Number
-                        </label>
-                        <div className="col-sm-10">
-                          <input
-                            type="text"
-                            className="form-control form-control-sm"
-                            id="mobileNumber"
-                            placeholder="Mobile Number"
-                            value={mobileNumber}
-                            // onChange={(e) => setMobileNumber(e.target.value)}
+                            id="phoneNumber"
+                            placeholder="Phone Number"
                             ref={inputmobileNumberReference}
+                            value={phoneNumber}
                             onChange={(e) => {
                               const inputValue = e.target.value;
-                              const numericValue = inputValue.replace(
-                                /\D/g,
-                                ""
-                              );
+                              const numericValue = inputValue.replace(/\D/g, "");
                               const limitedValue = numericValue.slice(0, 10);
-                              setMobileNumber(limitedValue);
+                              setPhoneNumber(limitedValue);
                             }}
                           />
                         </div>
                       </div>
                       <div className="form-group row">
                         <label
-                          htmlFor="address"
+                          htmlFor="instituteOrBranch"
                           className="col-sm-2 col-form-label"
                         >
-                          Address
+                          Institute/Branch
                         </label>
                         <div className="col-sm-10">
                           <input
                             className="form-control form-control-sm"
-                            id="address"
-                            placeholder="Address"
-                            value={address}
-                            onChange={(e) => setAddress(e.target.value)}
+                            id="instituteOrBranch"
+                            placeholder="Institute/Branch"
+                            ref={inputInstituteReference}
+                            value={instituteOrBranch}
+                            onChange={(e) => setInstituteOrBranch(e.target.value)}
                           />
                         </div>
                       </div>
-                      {/* <div className="form-group row">
-                        <label
-                          htmlFor="dob"
-                          className="col-sm-2 col-form-label"
-                        >
-                          Date Of Birth
-                        </label>
-                        <div className="col-sm-10">
-                          <input
-                            type="date"
-                            className="form-control form-control-sm"
-                            id="dob"
-                            value={dateOfBirth}
-                            onChange={(e) => setDateOfBirth(e.target.value)}
-                            max={new Date().toISOString().split("T")[0]}
-                          />
-                        </div>
-                      </div> */}
                       <div className="form-group">
                         <div className="d-flex justify-content-end">
                           {isLoaderActive ? (

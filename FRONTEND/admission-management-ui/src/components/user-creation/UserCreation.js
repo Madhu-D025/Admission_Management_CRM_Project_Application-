@@ -40,10 +40,11 @@ const UserCreation = () => {
   const [userEmail, setUserEmail] = useState("");
   const [roleId, setRoleId] = useState("");
   const [password, setPassword] = useState("");
-  const [contactNumber, setContactNumber] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [isActive, setIsActive] = useState("true");
+  const [emailStatus, setEmailStatus] = useState("true");
   const [userName, setUserName] = useState("");
-  const [department, setDepartment] = useState("");
+  const [instituteOrBranch, setInstituteOrBranch] = useState("");
 
   const inputFirstNameReference = useRef(null);
   const inputLastNameReference = useRef(null);
@@ -157,11 +158,15 @@ const UserCreation = () => {
       setUserEmail(user.email || "");
       setRoleId(user.roleID || "");
       setPassword(user.password || "");
-      setContactNumber(user.contactNumber || "");
-      setFirstName(user.firstName || "");
-      setLastName(user.lastName || "");
-      setDepartment(user.department || "");
-      setIsActive(user.isActive ? "true" : "false");
+      // Split fullName into firstName & lastName
+      const nameParts = (user.fullName || "").trim().split(" ");
+      setFirstName(nameParts[0] || "");
+      setLastName(nameParts.slice(1).join(" ") || "");
+      setPhoneNumber(user.phoneNumber || "");
+      setInstituteOrBranch(user.instituteOrBranch || "");
+      // Map status string to dropdown value
+      setIsActive(user.status === "Active" ? "true" : "false");
+      setEmailStatus(user.emailStatus === "Active" ? "true" : "false");
       setIsEditing(false);
     } else {
       toast.error("User not found.");
@@ -221,34 +226,36 @@ const UserCreation = () => {
     setUserEmail("");
     setRoleId("");
     setPassword("");
-    setContactNumber("");
+    setPhoneNumber("");
     setFirstName("");
     setLastName("");
     setIsActive("true");
+    setEmailStatus("true");
     setUserName("");
-    setDepartment("");
+    setInstituteOrBranch("");
   };
 
   const handleToggleUserStatus = async (userObj) => {
     setIsLoaderActive(true);
     try {
       const url = `${config.API_URL}AuthMasterController/UpdateUser`;
+      const fullName = `${userObj.fullName}`.trim();
+      const statusValue = userObj.status === "Active" ? "Inactive" : "Active";
       const data = {
         userID: userObj.userID,
         roleID: userObj.roleID,
         userName: userObj.userName,
         email: userObj.email,
         password: userObj.password,
-        contactNumber: userObj.contactNumber,
-        category: userObj.categoryName,
-        firstName: userObj.firstName,
-        lastName: userObj.lastName,
-        address: userObj.address,
+        phoneNumber: userObj.phoneNumber,
+        instituteOrBranch: userObj.instituteOrBranch,
+        fullName: fullName,
+        status: statusValue,
+        emailStatus: statusValue,
         roleName: userObj.roleName,
         createdBy: personalInfo.userID,
         clientId: config.clientId,
         modifiedBy: personalInfo.userID,
-        isActive: !userObj.isActive,
       };
 
       const response = await axios.post(url, data, {
@@ -326,14 +333,14 @@ const UserCreation = () => {
       return;
     }
 
-    if (!contactNumber) {
+    if (!phoneNumber) {
       toast.error("Please enter contact number.");
       inputContactNumberReference.current.focus();
       inputContactNumberReference.current.classList.add("is-invalid");
       return;
     }
 
-    if (contactNumber.length !== 10 || !/^\d+$/.test(contactNumber)) {
+    if (phoneNumber.length !== 10 || !/^\d+$/.test(phoneNumber)) {
       toast.error("Please enter a valid 10-digit contact number.");
       inputContactNumberReference.current.focus();
       inputContactNumberReference.current.classList.add("is-invalid");
@@ -358,8 +365,8 @@ const UserCreation = () => {
       return;
     }
 
-    if (!department || department === "") {
-      toast.error("Please select department.");
+    if (!instituteOrBranch || instituteOrBranch === "") {
+      toast.error("Please enter institute/branch.");
       inputDepartmentReference.current.focus();
       inputDepartmentReference.current.classList.add("is-invalid");
       return;
@@ -377,6 +384,9 @@ const UserCreation = () => {
       ? "AuthMasterController/UpdateUser"
       : "AuthMasterController/CreateUser";
     const getRoleName = allRolesList.find((x) => x.roleID === roleId);
+    const fullName = `${firstName} ${lastName}`.trim();
+    const statusValue = isActive === "true" ? "Active" : "Inactive";
+    const emailStatusValue = emailStatus === "true" ? "Active" : "Inactive";
 
     axios
       .post(
@@ -390,11 +400,11 @@ const UserCreation = () => {
           userName: userName,
           email: userEmail,
           password: password,
-          contactNumber: contactNumber,
-          firstName: firstName,
-          lastName: lastName,
-          department: department,
-          isActive: currentUserID ? isActive === "true" : true,
+          phoneNumber: phoneNumber,
+          fullName: fullName,
+          instituteOrBranch: instituteOrBranch,
+          status: statusValue,
+          emailStatus: emailStatusValue,
           roleName: getRoleName?.roleName,
         },
         { headers: config.headers3 }
@@ -444,18 +454,13 @@ const UserCreation = () => {
         width: "60px",
       },
       {
-        name: "User Name",
+        name: "UserName",
         selector: (row) => row.userName || "",
         sortable: true,
       },
       {
-        name: "First Name",
-        selector: (row) => row.firstName || "",
-        sortable: true,
-      },
-      {
-        name: "Last Name",
-        selector: (row) => row.lastName || "",
+        name: "FullName",
+        selector: (row) => row.fullName || "",
         sortable: true,
       },
       {
@@ -464,23 +469,18 @@ const UserCreation = () => {
         sortable: true,
       },
       {
-        name: "Contact Number",
-        selector: (row) => row.contactNumber || "",
+        name: "PhoneNumber",
+        selector: (row) => row.phoneNumber || "",
         sortable: true,
       },
       {
-        name: "Department",
-        selector: (row) => row.department || "",
+        name: "InstituteOrBranch",
+        selector: (row) => row.instituteOrBranch || "",
         sortable: true,
       },
       {
-        name: "Role",
-        selector: (row) => row.roleName || "",
-        sortable: true,
-      },
-      {
-        name: "Account Status",
-        selector: (row) => (row.isActive ? "Active" : "Inactive"),
+        name: "AccountStatus",
+        selector: (row) => row.status || "",
         sortable: true,
         cell: (row) => (
           <div
@@ -494,14 +494,47 @@ const UserCreation = () => {
           >
             <label
               className={`user-status-label ${
-                row.isActive ? "active" : "inactive"
+                row.status === "Active" ? "active" : "inactive"
               }`}
             >
-              {row.isActive ? "Active" : "Inactive"}
+              {row.status}
             </label>
 
             <Switch
-              checked={row.isActive}
+              checked={row.status === "Active"}
+              width={30}
+              height={15}
+              onColor="#11ba82"
+              offColor="#ff6060"
+              onChange={() => handleToggleUserStatus(row)}
+            />
+          </div>
+        ),
+      },
+      {
+        name: "Email Status",
+        selector: (row) => row.emailStatus || "",
+        sortable: true,
+        cell: (row) => (
+          <div
+            className={`d-flex align-items-center ${
+              row.roleName === "Admin" ? "disabled" : ""
+            }`}
+            style={{
+              opacity: row.roleName === "Admin" ? 0.5 : 1,
+              pointerEvents: row.roleName === "Admin" ? "none" : "auto",
+            }}
+          >
+            <label
+              className={`user-status-label ${
+                row.emailStatus === "Active" ? "active" : "inactive"
+              }`}
+            >
+              {row.emailStatus}
+            </label>
+
+            <Switch
+              checked={row.emailStatus === "Active"}
               width={30}
               height={15}
               onColor="#11ba82"
@@ -544,7 +577,7 @@ const UserCreation = () => {
   );
 
   const filteredData = useMemo(() => {
-    return allUsersList.filter((user) => user.isActive === showActiveUsers);
+    return allUsersList.filter((user) => user.status === (showActiveUsers ? "Active" : "Inactive"));
   }, [allUsersList, showActiveUsers]);
 
   if (viewMode === "list") {
@@ -751,12 +784,12 @@ const UserCreation = () => {
                 className="form-control form-control-sm"
                 id="contactNumberInput"
                 ref={inputContactNumberReference}
-                value={contactNumber}
+                value={phoneNumber}
                 onChange={(e) => {
                   const inputValue = e.target.value;
                   const numericValue = inputValue.replace(/\D/g, "");
                   const limitedValue = numericValue.slice(0, 10);
-                  setContactNumber(limitedValue);
+                  setPhoneNumber(limitedValue);
                 }}
                 placeholder="Contact Number"
                 inputMode="numeric"
@@ -796,23 +829,19 @@ const UserCreation = () => {
               </span>
             </div>
             <div className="form-group col-md-4">
-              <label>
-                Select Department <sup style={{ color: "red" }}>*</sup>
+              <label htmlFor="instituteOrBranchInput">
+                Institute/Branch <sup style={{ color: "red" }}>*</sup>
               </label>
-              <select
+              <input
+                type="text"
                 className="form-control form-control-sm"
+                id="instituteOrBranchInput"
                 ref={inputDepartmentReference}
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
+                value={instituteOrBranch}
+                onChange={(e) => setInstituteOrBranch(e.target.value)}
+                placeholder="Enter Institute/Branch"
                 disabled={isFormDisabled}
-              >
-                <option value="">--Select Department--</option>
-                {departments.map((dept) => (
-                  <option key={dept.id} value={dept.masterValue}>
-                    {dept.masterValue}
-                  </option>
-                ))}
-              </select>
+              />
             </div>
             <div className="form-group col-md-4">
               <label>
@@ -834,13 +863,27 @@ const UserCreation = () => {
               </select>
             </div>
             <div className="form-group col-md-4">
-              <label htmlFor="isActiveInput">isActive</label>
+              <label htmlFor="isActiveInput">Account Status</label>
               <select
                 className="form-control form-control-sm"
                 id="isActiveInput"
                 value={isActive}
                 onChange={(e) => setIsActive(e.target.value)}
                 placeholder="Select Status"
+                disabled={isFormDisabled}
+              >
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
+            </div>
+            <div className="form-group col-md-4">
+              <label htmlFor="emailStatusInput">Email Status</label>
+              <select
+                className="form-control form-control-sm"
+                id="emailStatusInput"
+                value={emailStatus}
+                onChange={(e) => setEmailStatus(e.target.value)}
+                placeholder="Select Email Status"
                 disabled={isFormDisabled}
               >
                 <option value="true">Active</option>
